@@ -243,7 +243,6 @@ int del_edge(lua_State *L)
 	}
 
 	return 0;
-
 }
 
 static connect find_node(header head, int node_id)

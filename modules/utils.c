@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-int top(sq_node_p stack_top)
+int sq_top(sq_node_p stack_top)
 {
 	if(stack_top == NULL)
 	{
@@ -13,7 +13,7 @@ int top(sq_node_p stack_top)
 	return stack_top->value;
 }
 
-int front(sq_node_p queue_front)
+int sq_front(sq_node_p queue_front)
 {
 	if(queue_front == NULL)
 	{
@@ -24,7 +24,7 @@ int front(sq_node_p queue_front)
 }
 
 //FUNCTIONS HANDELING CHANGING THE STACK
-sq_node_p push(sq_node_p stack_top, int val)
+sq_node_p sq_push(sq_node_p stack_top, int val)
 {
 	sq_node_p new_node = (sq_node_p)malloc(sizeof(sq_node));
 	new_node->value = val;
@@ -32,7 +32,7 @@ sq_node_p push(sq_node_p stack_top, int val)
 	return new_node;
 }
 
-sq_node_p pop(sq_node_p stack_top)
+sq_node_p sq_pop(sq_node_p stack_top)
 {
 	sq_node_p temp = stack_top;
 
@@ -51,7 +51,7 @@ sq_node_p pop(sq_node_p stack_top)
 }
 
 //FUNCTIONS HANDELING CHANGING THE QUEUE
-sq_node_p enque(sq_node_p front_of_queue, int val)
+sq_node_p sq_enque(sq_node_p front_of_queue, int val)
 {
 	sq_node_p new_node = (sq_node_p)malloc(sizeof(sq_node));
 	new_node->value = val;
@@ -74,7 +74,7 @@ sq_node_p enque(sq_node_p front_of_queue, int val)
 	return front_of_queue;
 }
 
-sq_node_p deque(sq_node_p front_of_queue)
+sq_node_p sq_deque(sq_node_p front_of_queue)
 {
 	if(front_of_queue == NULL)
 	{
@@ -91,7 +91,7 @@ sq_node_p deque(sq_node_p front_of_queue)
 	return front_of_queue;
 }
 
-void print_sq(sq_node_p sq)
+void sq_print(sq_node_p sq)
 {
 	sq_node_p runner = sq;
 

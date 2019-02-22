@@ -3,14 +3,16 @@
 int get_nodes(lua_State *L)
 {
 	header head = (header) lua_touserdata(L, 1);
-	lua_pop(L, 1);
+	lua_pop(L, 1); // Take off the pointer parameter
 
-	lua_newtable(L);
+	lua_newtable(L); // Push a new table onto the stack
 
 	int index = 1;
 	for (connect jogger = head->front; jogger != NULL; jogger = jogger->next_node) {
-		lua_pushnumber(L, index);
-		lua_newtable(L);
+		lua_pushnumber(L, index); // Push the next index of the node, sets up for settable call
+		lua_newtable(L); // Push on the table that will store each node
+
+		// Add the fields to our node table
 
 		lua_pushnumber(L, jogger->node_id);
 		lua_setfield(L, 3, "id");
@@ -20,6 +22,7 @@ int get_nodes(lua_State *L)
 		lua_pushnumber(L, jogger->y);
 		lua_setfield(L, 3, "y");
 
+		// Put our node table in the table we are returning
 		lua_settable(L, 1);
 		
 		index++;
@@ -63,7 +66,6 @@ int get_edges(lua_State *L)
 
 	return 1;
 }
-
 
 int print_graph(lua_State *L)
 {
