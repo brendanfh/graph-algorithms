@@ -1,4 +1,3 @@
-
 CC=gcc
 OBJ_FILES=$(shell find ./modules -name '*.c' | grep -Eo '^\.[^\.]*' | xargs printf '%s.o\n')
 FLAGS=
@@ -16,4 +15,4 @@ $(TARGET): link
 all: $(TARGET)
 
 clean:
-	(rm $(OBJS) 2>/dev/null) || true
+	(rm $(OBJ_FILES) 2>/dev/null) || true

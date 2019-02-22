@@ -27,6 +27,7 @@ int add_node(lua_State *L)
 	header head = (header)lua_touserdata(L,1);
 	connect new_node = (connect)malloc(sizeof(node));
 	new_node->next_node = NULL;
+	new_node->neighbor_list = NULL;
 
 	if (head->node_count == 0)
 	{
@@ -71,7 +72,7 @@ int del_node(lua_State *L)
 	while(walker->node_id != nid && walker != NULL){
 		if(walker->node_id > nid)
 		{
-			puts("c'mon brendan...");
+			puts("NODE NOT FOUND FOR DELETE");
 			return 0;
 		}
 		follower = walker;
@@ -79,7 +80,7 @@ int del_node(lua_State *L)
 	}
 	if (walker == NULL)
 	{
-		puts("brother, this node don't exist");
+		puts("NODE NOT FOUND FOR DELETE");
 		return 0;
 	}
 
@@ -102,7 +103,6 @@ int del_node(lua_State *L)
 		{
 			if (edge_walker->to_id == nid)
 			{
-				edge_walker = edge_walker->next_edge;
 				if (edge_walker == node_walker->neighbor_list)
 				{
 					node_walker->neighbor_list = node_walker->neighbor_list->next_edge;
@@ -112,6 +112,7 @@ int del_node(lua_State *L)
 					delete_walker->next_edge = edge_walker;
 					delete_walker = delete_walker->next_edge;
 				}
+				edge_walker = edge_walker->next_edge;
 				free(delete_walker);
 			}
 			else
@@ -265,4 +266,4 @@ static connect find_node(header head, int node_id)
 	}
 
 	return runner;
-}
+} 

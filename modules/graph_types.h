@@ -13,6 +13,8 @@ typedef struct node {
 	int node_id;
 	int edge_count;
 	struct node* next_node;
+
+	lua_Number x, y;
 } node, *connect;
 
 typedef struct {

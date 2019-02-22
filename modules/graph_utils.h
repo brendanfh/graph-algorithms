@@ -20,9 +20,11 @@ LUA_FUNCTION(get_nodes);
 	{
 		id = <edge_id>,
 		from_node = <node_id>,
-		to_node = <node_id>
+		to_node = <node_id>,
+		weight = number,
 	}
 */
 LUA_FUNCTION(get_edges);
+LUA_FUNCTION(print_graph);
 
 #endif
