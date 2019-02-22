@@ -2,6 +2,7 @@
 
 #include "graph_standard.h"
 #include "graph_utils.h"
+#include "graph_algorithms.h"
 
 int luaopen_graphs(lua_State *L)
 {
@@ -17,7 +18,11 @@ int luaopen_graphs(lua_State *L)
 
 		{ "get_nodes", get_nodes },
 		{ "get_edges", get_edges },
+		{ "get_node_pos", get_node_pos },
+		{ "set_node_pos", set_node_pos },
+
 		{ "print_graph", print_graph },
+		{ "dijkstras", dijkstras },
 		
 		{ NULL, NULL }
 	};

@@ -103,3 +103,89 @@ void sq_print(sq_node_p sq)
 
 	puts("");
 }
+
+ll_node_p insert_ll(ll_node_p front_of_list, int id, int distance)
+{
+	ll_node_p new_node = (ll_node_p)malloc(sizeof(ll_node));
+	new_node->next = NULL;
+	new_node->node_id = id;
+	new_node->distance = distance;
+
+	if (front_of_list == NULL)
+	{
+		front_of_list = new_node;
+		return front_of_list;
+	}
+	else
+	{
+		ll_node_p walker = front_of_list;
+		while (walker->next != NULL)
+		{
+			walker = walker->next;
+		}
+		walker->next = new_node;
+		return front_of_list;
+	}
+}
+
+ll_node_p remove_ll(ll_node_p front_of_list, int id)
+{
+	ll_node_p walker = front_of_list;
+	ll_node_p follower = walker;
+	while (walker != NULL && walker->node_id != id)
+	{
+		follower = walker;
+		walker = walker->next;
+	}
+	if (walker == NULL)
+	{
+		printf("bruh\n");
+		return front_of_list;
+	}
+	else if (walker == front_of_list)
+	{
+		front_of_list = front_of_list->next;
+		free(walker);
+		return front_of_list;
+	}
+	else
+	{
+		follower->next = walker->next;
+		free(walker);
+		return front_of_list;
+	}
+}
+
+int is_in_list(ll_node_p front_of_list, int id)
+{
+	ll_node_p walker = front_of_list;
+	while (walker != NULL && walker->node_id != id)
+	{
+		walker = walker->next;
+	}
+	if (walker == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+int get_distance(ll_node_p front_of_list, int id)
+{
+	ll_node_p walker = front_of_list;
+	while (walker != NULL && walker->node_id != id)
+	{
+		walker = walker->next;
+	}
+	if (walker == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		return walker->distance;
+	}
+}

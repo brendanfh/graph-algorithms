@@ -23,6 +23,6 @@ typedef struct {
 	int next_edge_id;
 } head_structure, *header;
 
-#define LUA_FUNCTION(func) int (func)(lua_State*)
+#define LUA_FUNCTION(func) int (func)(lua_State* L)
 
 #endif

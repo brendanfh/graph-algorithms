@@ -7,12 +7,15 @@
 
 #include "graph_types.h"
 
+#define ANY_WEIGHT -56489
+
 /* Returns all nodes in the form:
 	{
 		id = <node_id>,
 		x = <x_pos>,
 		y = <y_pos>
 	}
+	indexed by node_id
 */
 LUA_FUNCTION(get_nodes);
 
@@ -22,9 +25,17 @@ LUA_FUNCTION(get_nodes);
 		from_node = <node_id>,
 		to_node = <node_id>,
 		weight = number,
+		directed = boolean,
 	}
 */
 LUA_FUNCTION(get_edges);
+
+LUA_FUNCTION(get_node_pos);
+LUA_FUNCTION(set_node_pos);
+
 LUA_FUNCTION(print_graph);
+
+connect find_node(header head, int node_id);
+edge    find_edge(header head, int from_node, int to_node, int weight);
 
 #endif

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "graph_utils.h"
 #include "graph_standard.h"
 
-static connect find_node(header head, int node_id);
 static void add_edge(header head, int from_node, int to_node, int edge_weight);
 
 // graph pointer create_graph()
@@ -28,6 +28,8 @@ int add_node(lua_State *L)
 	connect new_node = (connect)malloc(sizeof(node));
 	new_node->next_node = NULL;
 	new_node->neighbor_list = NULL;
+	new_node->x = 0;
+	new_node->y = 0;
 
 	if (head->node_count == 0)
 	{
@@ -59,7 +61,7 @@ int add_node(lua_State *L)
 	return 1;
 }
 
-// del_node(graph pointer, int nodeID)
+// void del_node(graph pointer, int nodeID)
 int del_node(lua_State *L)
 {
 	header head = (header)lua_touserdata(L,1);
@@ -189,6 +191,7 @@ int add_directed(lua_State *L)
 	return 0;
 }
 
+// add_undirected(graph pointer, int from, int to, int weight)
 int add_undirected(lua_State *L)
 {
 	header head = (header)lua_touserdata(L, 1);
@@ -204,6 +207,7 @@ int add_undirected(lua_State *L)
 	return 0;
 }
 
+// del_edge(graph pointer, edge_id)
 int del_edge(lua_State *L)
 {
 	header head = (header)lua_touserdata(L, 1);
@@ -245,24 +249,3 @@ int del_edge(lua_State *L)
 	return 0;
 }
 
-static connect find_node(header head, int node_id)
-{
-	//walk through node list to find from node
-	connect runner = head->front;
-	if(runner == NULL)
-	{
-		puts("GRAPH HEADER LIST IS EMPTY");
-		return NULL; //graph is empty
-	}
-
-	//run through list of nodes until node with passed node_id is found
-	while(runner->node_id != node_id)
-	{
-		if(runner == NULL)
-			return NULL; //from id is never found
-
-		runner = runner->next_node; //move to next node in list
-	}
-
-	return runner;
-} 
