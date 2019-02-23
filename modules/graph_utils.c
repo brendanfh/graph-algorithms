@@ -126,13 +126,13 @@ connect find_node(header head, int node_id)
 {
 	//walk through node list to find from node
 	connect runner = head->front;
-	if(runner == NULL)
+	if (runner == NULL)
 	{
 		return NULL; //graph is empty
 	}
 
 	//run through list of nodes until node with passed node_id is found
-	while(runner->node_id != node_id)
+	while (runner->node_id != node_id)
 	{
 		if(runner == NULL)
 			return NULL; //from id is never found

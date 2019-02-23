@@ -73,4 +73,17 @@ function Graph:getEdges()
 	return edges
 end
 
+function Graph:getNodePos(nodeID)
+	return graphs.get_node_pos(self.graph, nodeID)
+end
+
+function Graph:setNodePos(nodeID, x, y)
+	local g = self.graph
+	graphs.set_node_pos(self.graph, nodeID, x, y)
+end
+
+function Graph:dijkstras(startID, iterations)
+	graphs.dijkstras(self.graph, startID, iterations)
+end
+
 return Graph

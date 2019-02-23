@@ -1,7 +1,9 @@
 require "lua.utils"
 local Graph = require "lua.graph"
+local Regions = require "lua.regions"
 
 local graph = nil
+local regions = nil
 
 function love.load()
 	graph = Graph:new()
@@ -10,16 +12,88 @@ function love.load()
 	graph:addNode(300, 100)
 	graph:addNode(200, 200)
 	graph:addNode(500, 400)
+	graph:addNode(0, 0)
 
 	graph:addArc(0, 1)
 	graph:addEdge(0, 2)
 	graph:addArc(1, 3)
 	graph:addEdge(1, 2)
 
+	--graph:dijkstras(0, 0)
+
 	love.graphics.setBackgroundColor(0.5, 0.5, 0.5)
+
+	regions = Regions:new()
+	regions:add {
+		priority = 1;
+		rect = { 200, 0, 600, 600 };
+
+		selectedNode = nil;
+
+		update = function(self) end;
+		draw = function(self)
+			love.graphics.setColor(0.7, 0.8, 0.9)
+			love.graphics.rectangle("fill", 0, 0, 600, 600)
+			drawGraph(graph)
+		end;
+
+		mousedown = function(self, x, y)
+			local nodes = graph:getNodes()
+
+			for _, node in pairs(nodes) do
+				local nx = node.x
+				local ny = node.y
+				local d = (x - nx) * (x - nx) + (y - ny) * (y - ny)
+
+				if d <= 400 then
+					self.selectedNode = node.id
+				end
+			end
+		end;
+		mouseup = function(self, x, y)
+			self.selectedNode = nil
+		end;
+
+		mousemove = function(self, x, y, dx, dy)
+			if self.selectedNode ~= nil then
+				graph:setNodePos(self.selectedNode, x, y)
+			end
+		end;
+		mouseenter = function(self)
+		end;
+		mouseleave = function(self)
+			self.selectedNode = nil
+		end;
+	}
+
+	regions:add {
+		priority = 0;
+		rect = { 0, 0, 0, 0 };
+
+		update = function(self) end;
+		draw = function(self) end;
+		mousedown = function(self, x, y) end;
+		mouseup = function(self, x, y) end;
+		mousemove = function(self, x, y, dx, dy) end;
+		mouseenter = function(self) end;
+		mouseleave = function(self) end;
+	}
+end
+
+function love.mousepressed(x, y, button, isTouch, presses)
+	regions:mousedown(x, y)
+end
+
+function love.mousereleased(x, y, button, isTouch, presses)
+	regions:mouseup(x, y)
+end
+
+function love.mousemoved(x, y, dx, dy)
+	regions:mousemove(x, y, dx, dy)
 end
 
 function love.update()
+	regions:update()
 end
 
 function drawGraph(graph)
@@ -62,5 +136,5 @@ function drawGraph(graph)
 end
 
 function love.draw()
-	drawGraph(graph)
+	regions:draw()
 end

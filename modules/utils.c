@@ -104,9 +104,9 @@ void sq_print(sq_node_p sq)
 	puts("");
 }
 
-ll_node_p insert_ll(ll_node_p front_of_list, int id, int distance)
+dj_node_p insert_dj(dj_node_p front_of_list, int id, int distance)
 {
-	ll_node_p new_node = (ll_node_p)malloc(sizeof(ll_node));
+	dj_node_p new_node = (dj_node_p)malloc(sizeof(dj_node));
 	new_node->next = NULL;
 	new_node->node_id = id;
 	new_node->distance = distance;
@@ -118,7 +118,7 @@ ll_node_p insert_ll(ll_node_p front_of_list, int id, int distance)
 	}
 	else
 	{
-		ll_node_p walker = front_of_list;
+		dj_node_p walker = front_of_list;
 		while (walker->next != NULL)
 		{
 			walker = walker->next;
@@ -128,10 +128,10 @@ ll_node_p insert_ll(ll_node_p front_of_list, int id, int distance)
 	}
 }
 
-ll_node_p remove_ll(ll_node_p front_of_list, int id)
+dj_node_p remove_dj(dj_node_p front_of_list, int id)
 {
-	ll_node_p walker = front_of_list;
-	ll_node_p follower = walker;
+	dj_node_p walker = front_of_list;
+	dj_node_p follower = walker;
 	while (walker != NULL && walker->node_id != id)
 	{
 		follower = walker;
@@ -139,7 +139,7 @@ ll_node_p remove_ll(ll_node_p front_of_list, int id)
 	}
 	if (walker == NULL)
 	{
-		printf("bruh\n");
+		printf("bruh %d\n", id);
 		return front_of_list;
 	}
 	else if (walker == front_of_list)
@@ -156,9 +156,9 @@ ll_node_p remove_ll(ll_node_p front_of_list, int id)
 	}
 }
 
-int is_in_list(ll_node_p front_of_list, int id)
+int is_in_list(dj_node_p front_of_list, int id)
 {
-	ll_node_p walker = front_of_list;
+	dj_node_p walker = front_of_list;
 	while (walker != NULL && walker->node_id != id)
 	{
 		walker = walker->next;
@@ -173,9 +173,9 @@ int is_in_list(ll_node_p front_of_list, int id)
 	}
 }
 
-int get_distance(ll_node_p front_of_list, int id)
+int get_distance(dj_node_p front_of_list, int id)
 {
-	ll_node_p walker = front_of_list;
+	dj_node_p walker = front_of_list;
 	while (walker != NULL && walker->node_id != id)
 	{
 		walker = walker->next;
@@ -187,5 +187,16 @@ int get_distance(ll_node_p front_of_list, int id)
 	else
 	{
 		return walker->distance;
+	}
+}
+
+void delete_dj(dj_node_p front_of_list)
+{
+	dj_node_p follower = front_of_list;
+	while (front_of_list != NULL)
+	{
+		follower = front_of_list;
+		front_of_list = front_of_list->next;
+		free(follower);
 	}
 }
