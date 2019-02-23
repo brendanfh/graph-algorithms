@@ -83,7 +83,7 @@ function Graph:setNodePos(nodeID, x, y)
 end
 
 function Graph:dijkstras(startID, iterations)
-	graphs.dijkstras(self.graph, startID, iterations)
+	return graphs.dijkstras(self.graph, startID, iterations)
 end
 
 return Graph

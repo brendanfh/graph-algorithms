@@ -61,6 +61,8 @@ int dijkstras(lua_State *L)
 		insert_dj(shortest_distance, distance_walker->node_id, -1);
 		distance_walker = distance_walker->next;
 	}
+	int last_from;
+	int last_to;
 
 	while (connected_nodes != NULL && current_iterations <= iterations)
 	{
@@ -93,7 +95,8 @@ int dijkstras(lua_State *L)
 			}
 			visited_tmp = visited_tmp->next;
 		}
-
+		last_to = to;
+		last_from = from;
 
 		if (is_in_list(connected_nodes,to) == 1)
 		{
@@ -128,7 +131,7 @@ int dijkstras(lua_State *L)
 		lua_newtable(L);
 
 		lua_pushnumber(L, sdwalker->node_id);
-		lua_setfield(L, 3, "node_id");
+		lua_setfield(L, 3, "id");
 
 		lua_pushnumber(L, sdwalker->distance);
 		lua_setfield(L, 3, "distance");

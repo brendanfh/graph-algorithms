@@ -21,6 +21,23 @@ function Regions:add(region)
 	return id
 end
 
+function Regions:remove(regionID)
+	local idx = -1
+	for i, reg in ipairs(self) do
+		if reg.id == regionID then
+			idx = i
+			break
+		end
+	end
+
+	if idx >= 0 then
+		table.remove(self, idx)
+		table.sort(self, function(a, b)
+			return a.priority > b.priority
+		end)
+	end
+end
+
 function Regions:draw()
 	for i = #self, 1, -1 do
 		local region = self[i]
