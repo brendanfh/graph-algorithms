@@ -251,8 +251,9 @@ function love.load()
 
 		mousedown = function(self, x, y)
 			for i, button in ipairs(self.buttons) do
-				if y >= (i - 1) * 60 + 10 and y <= i * 60 + 10 then
+				if y >= (i - 1) * 60 + 10 and y <= i * 60 - 10 then
 					button:click()
+					break
 				end
 			end
 		end;
