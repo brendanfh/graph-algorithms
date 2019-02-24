@@ -40,6 +40,6 @@ LUA_FUNCTION(print_graph);
 
 connect find_node(header head, int node_id);
 edge    find_edge(header head, int from_node, int to_node, int weight);
-edge 	get_edge(header head, int edge_id);
+edge 	get_edge(header head, int edge_id, connect* node);
 
 #endif

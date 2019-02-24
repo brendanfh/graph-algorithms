@@ -31,7 +31,7 @@ int add_node(lua_State *L)
 	new_node->x = 0;
 	new_node->y = 0;
 
-	if (head->node_count == 0)
+	if (head == NULL || head->node_count == 0 || head->front == NULL)
 	{
 		new_node->node_id = 0;
 		head->front = new_node;
@@ -54,6 +54,7 @@ int add_node(lua_State *L)
 			walker->next_node = new_node;
 		}
 	}
+
 	head->node_count++;
 
 	lua_pushnumber(L,new_node->node_id);

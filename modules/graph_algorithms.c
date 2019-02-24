@@ -23,7 +23,7 @@ static dj_node_p dj_search(header head, int start_node)
 		}
 
 		edge edge_walker = walker->neighbor_list;
-		while (edge_walker != NULL && is_in_list(visited_nodes, edge_walker->to_id) == 1) 
+		while (edge_walker != NULL && is_in_list(visited_nodes, edge_walker->to_id) == 1)
 		{
 			edge_walker = edge_walker->next_edge;
 		}
@@ -37,6 +37,7 @@ static dj_node_p dj_search(header head, int start_node)
 			push(stack, edge_walker->to_id);
 		}
 	}
+
 	return visited_nodes;
 }
 
@@ -45,26 +46,28 @@ int breadth_first_search(lua_State *L)
 	header head = (header)lua_touserdata(L, 1);
 	int start_id = lua_tointeger(L, 2);
 	int iterations = lua_tointeger(L, 3);
+	lua_pop(L, 3);
 
 	int previous_node = start_id;
 
 	int current_iterations = 0;
 
-	sq_node_p visited_nodes = NULL;
+	sq_node_p visited = NULL;
 	sq_node_p from_visited_nodes = NULL;
-	enque(visited_nodes, start_id);
-	enque(from_visited_nodes, start_id);
-
 
 	sq_node_p queue = NULL;
+	sq_node_p from_queue = NULL;
 	enque(queue, start_id);
+	enque(from_queue, start_id);
 
 	while(queue != NULL && current_iterations <= iterations)
 	{
 		int node_id = front(queue);
+		int previous_node = front(from_queue);
 		deque(queue);
+		deque(from_queue);
 
-		if(sq_contains(visited_nodes, node_id))
+		if(sq_contains(visited, node_id))
 			continue;
 
 		connect runner = find_node(head, node_id);
@@ -74,49 +77,45 @@ int breadth_first_search(lua_State *L)
 		while(edge_runner != NULL)
 		{
 			enque(queue, edge_runner->to_id);
+			enque(from_queue, runner->node_id);
 			edge_runner = edge_runner->next_edge;
 		}
 
 		enque(from_visited_nodes, previous_node);
-		previous_node = node_id;
-		enque(visited_nodes, node_id);
+		enque(visited, node_id);
 
 		current_iterations++;
 	}
 
-	deque(visited_nodes);
-	deque(from_visited_nodes);
-
-
 	//BUILD OUT RETURN TO LUA
 	lua_newtable(L);
-	sq_node_p vwalker;
-	sq_node_p fvwalker;
+
 	int index = 1;
-	while (vwalker != NULL)
+	while (visited != NULL)
 	{
 		lua_pushnumber(L, index);
 
 		lua_newtable(L);
 
-		lua_pushnumber(L, front(fvwalker));
+		lua_pushnumber(L, front(from_visited_nodes));
 		lua_setfield(L, 3, "from");
-		deque(fvwalker);
+		deque(from_visited_nodes);
 
-		lua_pushnumber(L, front(vwalker));
+		lua_pushnumber(L, front(visited));
 		lua_setfield(L, 3, "to");
-		deque(vwalker);
+		deque(visited);
 
 		lua_settable(L, 1);
 
 		index++;
 	}
 
+	lua_pushboolean(L, queue == NULL);
 
-	sq_delete(visited_nodes);
+	sq_delete(visited);
 	sq_delete(from_visited_nodes);
 	sq_delete(queue);
-	return 1;
+	return 2;
 }
 
 int depth_first_search(lua_State *L)
@@ -124,77 +123,75 @@ int depth_first_search(lua_State *L)
 	header head = (header)lua_touserdata(L, 1);
 	int start_id = lua_tointeger(L, 2);
 	int iterations = lua_tointeger(L, 3);
-
-	int previous_node = start_id;
+	lua_pop(L, 3);
 
 	int current_iterations = 0;
 
-	sq_node_p visited_nodes = NULL;
+	sq_node_p visited = NULL;
 	sq_node_p from_visited_nodes = NULL;
-	enque(visited_nodes, start_id);
-	enque(from_visited_nodes, start_id);
+	//enque(visited, start_id);
+	//enque(from_visited_nodes, start_id);
 
 	sq_node_p stack = NULL;
+	sq_node_p from_stack = NULL;
 	push(stack, start_id);
+	push(from_stack, start_id);
 
-	while(stack != NULL && current_iterations <= iterations)
+	while (stack != NULL && current_iterations <= iterations)
 	{
 		int node_id = top(stack);
+		int previous_node = top(from_stack);
 		pop(stack);
+		pop(from_stack);
 
-		if(sq_contains(visited_nodes, node_id))
+		if(sq_contains(visited, node_id))
 			continue;
 
 		connect runner = find_node(head, node_id);
 
 		edge edge_runner = runner->neighbor_list; //grab the neighbor list of our current node
 
-		while(edge_runner != NULL)
+		while (edge_runner != NULL)
 		{
 			push(stack, edge_runner->to_id);
+			push(from_stack, runner->node_id);
 			edge_runner = edge_runner->next_edge;
 		}
 
 		enque(from_visited_nodes, previous_node);
-		previous_node = node_id;
-		enque(visited_nodes, node_id);
+		enque(visited, node_id);
 
 		current_iterations++;
 	}
 
-	deque(from_visited_nodes);
-	deque(visited_nodes);
-
-
 	//BUILD OUT RETURN TO LUA
 	lua_newtable(L);
-	sq_node_p vwalker;
-	sq_node_p fvwalker;
 	int index = 1;
-	while (vwalker != NULL)
+	while (visited != NULL)
 	{
 		lua_pushnumber(L, index);
 
 		lua_newtable(L);
 
-		lua_pushnumber(L, front(fvwalker));
+		lua_pushnumber(L, front(from_visited_nodes));
 		lua_setfield(L, 3, "from");
-		deque(fvwalker);
+		deque(from_visited_nodes);
 
-		lua_pushnumber(L, front(vwalker));
+		lua_pushnumber(L, front(visited));
 		lua_setfield(L, 3, "to");
-		deque(vwalker);
+		deque(visited);
 
 		lua_settable(L, 1);
 
 		index++;
 	}
 
+	lua_pushboolean(L, stack == NULL);
 
-	sq_delete(visited_nodes);
+	sq_delete(visited);
 	sq_delete(from_visited_nodes);
 	sq_delete(stack);
-	return 1;
+	return 2;
 }
 
 int dijkstras(lua_State *L)
@@ -314,3 +311,182 @@ int dijkstras(lua_State *L)
 	return 2;
 }
 
+int prims(lua_State *L)
+{
+	header head = (header)lua_touserdata(L, 1);
+	int start_id = lua_tointeger(L, 2);
+	int iterations = lua_tointeger(L, 3);
+	lua_pop(L, 3);
+
+	sq_node_p visited_nodes = NULL;
+	sq_node_p from_visited_nodes = NULL;
+	enque(visited_nodes, start_id);
+	enque(from_visited_nodes, start_id);
+
+	int min_edge_weight;
+	int from_node_id;
+	int to_node_id;
+
+	int current_iterations = 0;
+	int is_completed = 0;
+	
+	while (current_iterations <= iterations)
+	{
+		min_edge_weight = -1;
+		from_node_id = -1;
+		to_node_id = -1;
+
+		edge edge_runner = NULL;
+		sq_node_p node_runner = visited_nodes;
+		while(node_runner != NULL)
+		{
+			edge_runner = find_node(head, node_runner->value)->neighbor_list;
+			while(edge_runner != NULL)
+			{
+				if(sq_contains(visited_nodes, edge_runner->to_id) == 0 && (edge_runner->weight < min_edge_weight || min_edge_weight == -1))
+				{
+					min_edge_weight = edge_runner->weight;
+					from_node_id = node_runner->value;
+					to_node_id = edge_runner->to_id;
+				}
+
+				edge_runner = edge_runner->next_edge;
+			}
+
+			node_runner = node_runner->next;
+		}
+
+		if(min_edge_weight == -1)
+		{
+			is_completed = 1;
+			break;
+		}
+
+		enque(visited_nodes, to_node_id);
+		enque(from_visited_nodes, from_node_id);
+
+		current_iterations++;
+	}
+
+
+	//RETURN STUFF
+	lua_newtable(L);
+	deque(visited_nodes);
+	deque(from_visited_nodes);
+
+	int index = 1;
+	while (visited_nodes != NULL)
+	{
+		lua_pushnumber(L, index);
+
+		lua_newtable(L);
+
+		lua_pushnumber(L, front(from_visited_nodes));
+		lua_setfield(L, 3, "from");
+		deque(from_visited_nodes);
+
+		lua_pushnumber(L, front(visited_nodes));
+		lua_setfield(L, 3, "to");
+		deque(visited_nodes);
+
+		lua_settable(L, 1);
+
+		index++;
+	}
+
+	lua_pushboolean(L, is_completed == 1);
+
+	//MEMORY IS ALREADY FREE'D FROM DEQUEs
+	//sq_delete(visited_nodes);
+	//sq_delete(from_visited_nodes);
+	return 2;
+}
+
+
+int kruskals(lua_State *L)
+{
+	header head = (header)lua_touserdata(L, 1);
+	int iterations = lua_tointeger(L, 3);
+	lua_pop(L, 2);
+
+	sq_node_p visited_nodes = NULL;
+	sq_node_p from_visited_nodes = NULL;
+
+	int min_edge_weight;
+	int from_node_id;
+	int to_node_id;
+
+	int current_iterations = 0;
+	int is_completed = 0;
+	
+	while (current_iterations <= iterations)
+	{
+		min_edge_weight = -1;
+		from_node_id = -1;
+		to_node_id = -1;
+
+		edge edge_runner = NULL;
+		connect node_runner = head->front; 
+		while(node_runner != NULL)
+		{
+			edge_runner = node_runner->neighbor_list;
+			while(edge_runner != NULL)
+			{
+				if((sq_contains(visited_nodes, edge_runner->to_id) == 0 || sq_contains(visited_nodes, node_runner->node_id) == 0) && (edge_runner->weight < min_edge_weight || min_edge_weight == -1))
+				{
+					min_edge_weight = edge_runner->weight;
+					from_node_id = node_runner->node_id;
+					to_node_id = edge_runner->to_id;
+				}
+
+				edge_runner = edge_runner->next_edge;
+			}
+
+			node_runner = node_runner->next_node;
+		}
+
+		if(min_edge_weight == -1)
+		{
+			is_completed = 1;
+			break;
+		}
+
+		enque(visited_nodes, to_node_id);
+		enque(from_visited_nodes, from_node_id);		
+
+		iterations++;
+	}
+
+
+	//RETURN STUFF
+	lua_newtable(L);
+	deque(visited_nodes);
+	deque(from_visited_nodes);
+
+	int index = 1;
+	while (visited_nodes != NULL)
+	{
+		lua_pushnumber(L, index);
+
+		lua_newtable(L);
+
+		lua_pushnumber(L, front(from_visited_nodes));
+		lua_setfield(L, 3, "from");
+		deque(from_visited_nodes);
+
+		lua_pushnumber(L, front(visited_nodes));
+		lua_setfield(L, 3, "to");
+		deque(visited_nodes);
+
+		lua_settable(L, 1);
+
+		index++;
+	}
+
+	lua_pushboolean(L, is_completed == 1);
+
+	//MEMORY IS ALREADY FREE'D FROM DEQUEs
+	//sq_delete(visited_nodes);
+	//sq_delete(from_visited_nodes);
+	return 2;
+}

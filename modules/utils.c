@@ -44,8 +44,7 @@ sq_node_p sq_pop(sq_node_p stack_top)
 
 	stack_top = stack_top->next;
 
-	int n = temp->value;
-	free(temp);
+	free(temp); //dump the removed top of stack
 
 	return stack_top;
 }
@@ -76,17 +75,17 @@ sq_node_p sq_enque(sq_node_p front_of_queue, int val)
 
 sq_node_p sq_deque(sq_node_p front_of_queue)
 {
-	if(front_of_queue == NULL)
+	sq_node_p temp = front_of_queue;
+
+	if(temp == NULL)
 	{
 		puts("QUEUE IS ALREADY EMPTY");
 		return NULL;
 	}
 
-	sq_node_p temp = front_of_queue;
-
 	front_of_queue = front_of_queue->next;
 
-	free(temp); //dump the removed queue
+	free(temp); //dump the removed front of queue
 
 	return front_of_queue;
 }
@@ -120,15 +119,8 @@ void sq_print(sq_node_p sq)
 
 void sq_delete(sq_node_p sq)
 {
-	sq_node_p runner = sq;
-
 	while(sq != NULL)
-	{
-		sq_node_p tmp = sq;
-		sq = sq->next;
-
-		free(tmp);
-	}
+		pop(sq);
 }
 
 dj_node_p insert_dj(dj_node_p front_of_list, int id, int distance)

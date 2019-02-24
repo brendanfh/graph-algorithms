@@ -96,7 +96,8 @@ int get_edge_id(lua_State *L)
 	int edge_id = lua_tointeger(L, 2);
 	lua_pop(L, 2);
 
-	edge e = get_edge(head, edge_id);
+	connect node = NULL;
+	edge e = get_edge(head, edge_id, &node);
 	if (e == NULL) {
 		lua_pushnil(L);
 	} else {
@@ -104,6 +105,12 @@ int get_edge_id(lua_State *L)
 
 		lua_pushnumber(L, e->weight);
 		lua_setfield(L, 1, "weight");
+
+		lua_pushnumber(L, node->node_id);
+		lua_setfield(L, 1, "from_node");
+
+		lua_pushnumber(L, e->to_id);
+		lua_setfield(L, 1, "to_node");
 
 		lua_pushnumber(L, e->edge_id);
 		lua_setfield(L, 1, "id");
@@ -119,7 +126,7 @@ int set_edge_weight(lua_State *L)
 	int new_weight = lua_tointeger(L, 3);
 	lua_pop(L, 3);
 
-	edge e = get_edge(head, edge_id);
+	edge e = get_edge(head, edge_id, NULL);
 	if (e == NULL) return 0;
 
 	e->weight = new_weight;
@@ -225,7 +232,7 @@ edge find_edge(header head, int from_node, int to_node, int weight)
 	return jogger;
 }
 
-edge get_edge(header head, int edge_id)
+edge get_edge(header head, int edge_id, connect* node)
 {
 	connect jogger = head->front;
 	while (jogger != NULL)
@@ -236,6 +243,9 @@ edge get_edge(header head, int edge_id)
 		{
 			if (curr_edge->edge_id == edge_id)
 			{
+				if (node != NULL)
+					*node = jogger;
+
 				return curr_edge;
 			}
 

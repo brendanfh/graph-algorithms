@@ -111,4 +111,16 @@ function Graph:dijkstras(startID, iterations)
 	return graphs.dijkstras(self.graph, startID, iterations)
 end
 
+function Graph:depthFirst(startID, iterations)
+	return graphs.depth_first_search(self.graph, startID, iterations)
+end
+
+function Graph:breadthFirst(startID, iterations)
+	return graphs.breadth_first_search(self.graph, startID, iterations)
+end
+
+function Graph:prims(startID, iterations)
+	return graphs.prims(self.graph, startID, iterations)
+end
+
 return Graph

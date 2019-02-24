@@ -26,6 +26,9 @@ int luaopen_graphs(lua_State *L)
 
 		{ "print_graph", print_graph },
 		{ "dijkstras", dijkstras },
+		{ "depth_first_search", depth_first_search },
+		{ "breadth_first_search", breadth_first_search },
+		{ "prims", prims },
 		
 		{ NULL, NULL }
 	};

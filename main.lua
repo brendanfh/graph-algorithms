@@ -13,24 +13,12 @@ function love.load()
 	SIDEBAR_FONT = love.graphics.setNewFont(24)
 
 	graph = Graph:new()
-
-	-- graph:addNode(100, 100)
-	-- graph:addNode(300, 100)
-	-- graph:addNode(200, 200)
-	-- graph:addNode(500, 400)
-	-- graph:addNode(300, 300)
-
-	-- graph:addArc(0, 1)
-	-- graph:addEdge(0, 2)
-	-- graph:addArc(1, 3, 99)
-	-- graph:addEdge(1, 2)
-
 	regions = Regions:new()
 
 	graph_region = {
 		-- needed for Regions calculations
 		priority = 1;
-		rect = { 200, 0, 600, 600 };
+		rect = { 200, 0, 1000, 800 };
 
 		-- other properties
 		selectedNode = nil;
@@ -41,7 +29,7 @@ function love.load()
 		update = function(self) end;
 		draw = function(self)
 			love.graphics.setColor(0.7, 0.8, 0.9)
-			love.graphics.rectangle("fill", 0, 0, 600, 600)
+			love.graphics.rectangle("fill", 0, 0, 1000, 800)
 			drawGraph(graph, self.selectedNode)
 
 			if self.postDrawFunction then
@@ -53,6 +41,7 @@ function love.load()
 			self.isMouseDown = true
 			self.selectedNode = nil
 			local nodes = graph:getNodes()
+			local edges = graph:getEdges()
 
 			for _, node in pairs(nodes) do
 				local nx = node.x
@@ -65,6 +54,22 @@ function love.load()
 					else
 						self.clickNodeFunction(node)
 					end
+
+					return
+				end
+			end
+
+			for _, edge in pairs(edges) do
+				local x1, y1 = graph:getNodePos(edge.from_node)
+				local x2, y2 = graph:getNodePos(edge.to_node)
+
+				local d1 = math.sqrt(math.sqrDist(x1, y1, x, y))
+				local d2 = math.sqrt(math.sqrDist(x2, y2, x, y))
+				local d3 = math.sqrt(math.sqrDist(x1, y1, x2, y2))
+
+				if d1 + d2 <= d3 + 2 then
+					createWeightChanger(edge.id, (x1 + x2) / 2 + 100, (y1 + y2) / 2 - 50)
+					return
 				end
 			end
 		end;
@@ -90,7 +95,7 @@ function love.load()
 	-- Sidebar
 	regions:add {
 		priority = 1;
-		rect = { 0, 0, 200, 600 };
+		rect = { 0, 0, 200, 800 };
 
 		buttons = {
 			{
@@ -106,7 +111,7 @@ function love.load()
 				click = function(self)
 					graph:addNode(self.placeX, self.placeY)
 					self.placeX = self.placeX + 40
-					if self.placeX >= 600 then
+					if self.placeX >= 1000 then
 						self.placeX = 20
 						self.placeY = self.placeY + 40
 					end
@@ -162,7 +167,62 @@ function love.load()
 				text = "Run Dijkstras",
 				click = function()
 					if graph_region.selectedNode ~= nil then
-						createDijskstraStepper(graph_region.selectedNode)
+						function dijkstrasStepper(start, step)
+							local dj, done = graph:dijkstras(start, step)
+							graph_region.postDrawFunction = function(reg)
+								drawDijkstras(graph, dj)
+							end
+							return done
+						end
+						createStepper(graph_region.selectedNode, dijkstrasStepper)
+					end
+				end;
+			};
+			{
+				text = "Run DFS",
+				click = function()
+					if graph_region.selectedNode ~= nil then
+						function dfsStepper(start, step)
+							local dfs, done = graph:depthFirst(start, step)
+							graph_region.postDrawFunction = function(reg)
+								drawTree(graph, dfs)
+							end
+							return done
+						end
+
+						createStepper(graph_region.selectedNode, dfsStepper, 0)
+					end
+				end;
+			};
+			{
+				text = "Run BFS",
+				click = function()
+					if graph_region.selectedNode ~= nil then
+						function bfsStepper(start, step)
+							local bfs, done = graph:breadthFirst(start, step)
+							graph_region.postDrawFunction = function(reg)
+								drawTree(graph, bfs)
+							end
+							return done
+						end
+						
+						createStepper(graph_region.selectedNode, bfsStepper, 0)
+					end
+				end;
+			};
+			{
+				text = "Run Prims",
+				click = function()
+					if graph_region.selectedNode ~= nil then
+						function primStepper(start, step)
+							local prims, done = graph:prims(start, step)
+							graph_region.postDrawFunction = function(reg)
+								drawTree(graph, prims)
+							end
+							return done
+						end
+						
+						createStepper(graph_region.selectedNode, primStepper, 0)
 					end
 				end;
 			};
@@ -172,16 +232,19 @@ function love.load()
 		update = function(self) end;
 
 		draw = function(self)
+			love.graphics.setColor(1, 1, 1)
+			love.graphics.rectangle("fill", unpack(self.rect))
 			love.graphics.setFont(SIDEBAR_FONT)
+
 			for i, button in ipairs(self.buttons) do
 				if self.mousePos >= (i - 1) * 60 + 10 and self.mousePos < i * 60 - 10 then
-					love.graphics.setColor(.4, .4, .4)
+					love.graphics.setColor(.9, .9, .9)
 				else
-					love.graphics.setColor(.2, .2, .2)
+					love.graphics.setColor(.7, .7, .7)
 				end
 				love.graphics.rectangle("fill", 10, (i - 1) * 60 + 10, 180, 40)
 
-				love.graphics.setColor(1, 1, 1)
+				love.graphics.setColor(0, 0, 0)
 				love.graphics.printf(button.text, 0, (i - 1) * 60 + 15, 200, "center")	
 			end
 		end;
@@ -189,7 +252,7 @@ function love.load()
 		mousedown = function(self, x, y)
 			for i, button in ipairs(self.buttons) do
 				if y >= (i - 1) * 60 + 10 and y <= i * 60 + 10 then
-					button.click(button)
+					button:click()
 				end
 			end
 		end;
@@ -215,60 +278,53 @@ function love.load()
 	-- 	mouseenter = function(self) end;
 	-- 	mouseleave = function(self) end;
 	-- }
-
-	createWeightChanger(0)
 end
 
-local dijkstrasOpen = false
-function createDijskstraStepper(start)
-	if dijkstrasOpen then return end
+local stepperOpen = false
+function createStepper(start, update, startStep)
+	if stepperOpen then return end
 
-	dijkstrasOpen = true
-	local step = -1
+	stepperOpen = true
+	startStep = startStep or -1
+	local step = startStep
+
+	update(start, step)
 
 	local isDone = false
-	function updateDijkstras()
-		local dj, done = graph:dijkstras(start, step)
-		isDone = done
-		graph_region.postDrawFunction = function(reg)
-			drawDijkstras(graph, dj)
-		end
-	end
-	updateDijkstras()
-
 	local reg_id
+	local width = 1000
 	local region = {
 		priority = 10;
-		rect = { 200, 550, 600, 50 };
+		rect = { 200, 750, width, 50 };
 
 		update = function(self) end;
 		draw = function(self)
 			love.graphics.setFont(SIDEBAR_FONT)
 			love.graphics.setColor(0, 0, 0, 0.7)
-			love.graphics.rectangle("fill", 0, 0, 600, 50)
+			love.graphics.rectangle("fill", 0, 0, width, 50)
 
 			love.graphics.setColor(1, 1, 1)
-			love.graphics.polygon("fill", 265, 25, 295, 10, 295, 40)
-			love.graphics.polygon("fill", 335, 25, 305, 10, 305, 40)
+			love.graphics.polygon("fill", (width / 2) - 35, 25, (width / 2) - 5, 10, (width / 2) - 5, 40)
+			love.graphics.polygon("fill", (width / 2) + 35, 25, (width / 2) + 5, 10, (width / 2) + 5, 40)
 
-			love.graphics.printf("X", 540, 5, 50, "center", 0, 1.4, 1.4)
+			love.graphics.printf("X", width - 60, 5, 50, "center", 0, 1.4, 1.4)
 		end;
 		mousedown = function(self, x, y)
-			if x >= 265 and x <= 295 then
+			if x >= (width / 2) - 35 and x <= (width / 2) - 5 then
 				step = step - 1
 				isDone = false
-				if step < -1 then step = -1 end
-			elseif x >= 305 and x <= 335 then
+				if step < startStep then step = startStep end
+			elseif x >= (width / 2) + 5 and x <= (width / 2) + 35 then
 				if not isDone then
 					step = step + 1
 				end
 			end
 
-			updateDijkstras()
-			if x >= 550 then
+			isDone = update(start, step)
+			if x >= width - 50 then
 				regions:remove(reg_id)
 				graph_region.postDrawFunction = nil
-				dijkstrasOpen = false
+				stepperOpen = false
 			end
 		end;
 		mouseup = function(self, x, y) end;
@@ -280,10 +336,15 @@ function createDijskstraStepper(start)
 	reg_id = regions:add(region)
 end
 
-function createWeightChanger(edgeID)
-	regions:add {
+function createWeightChanger(edgeID, x, y)
+	if y < 0 then
+		y = 0
+	end
+
+	local reg_id
+	reg_id = regions:add {
 		priority = 100;
-		rect = { 200, 0, 200, 100 };
+		rect = { x, y, 200, 100 };
 
 		update = function(self) end;
 		draw = function(self)
@@ -315,7 +376,32 @@ function createWeightChanger(edgeID)
 			end
 		end;
 		mousedown = function(self, x, y)
+			if math.sqrDist(x, y, 160, 60) <= 20 * 20 then
+				local edge = graph:getEdge(edgeID)
+				local otherEdge = graph:getEdgeID(edge.to_node, edge.from_node, edge.weight)
 
+				if otherEdge ~= -1 then
+					graph:setEdgeWeight(otherEdge, edge.weight + 1)
+				end
+
+				graph:setEdgeWeight(edge.id, edge.weight + 1)
+			end
+			if math.sqrDist(x, y, 40, 60) <= 20 * 20 then
+				local edge = graph:getEdge(edgeID)
+				local otherEdge = graph:getEdgeID(edge.to_node, edge.from_node, edge.weight)
+
+				if edge.weight >= 2 then
+					if otherEdge ~= -1 then
+						graph:setEdgeWeight(otherEdge, edge.weight - 1)
+					end
+
+					graph:setEdgeWeight(edge.id, edge.weight - 1)
+				end
+			end
+
+			if x >= 170 and y <= 30 then
+				regions:remove(reg_id)
+			end
 		end;
 		mouseup = function(self, x, y) end;
 		mousemove = function(self, x, y, dx, dy) end;
@@ -324,23 +410,9 @@ function createWeightChanger(edgeID)
 	}
 end
 
-function love.mousepressed(x, y, button, isTouch, presses)
-	regions:mousedown(x, y)
-end
-
-function love.mousereleased(x, y, button, isTouch, presses)
-	regions:mouseup(x, y)
-end
-
-function love.mousemoved(x, y, dx, dy)
-	regions:mousemove(x, y, dx, dy)
-end
-
-function love.update()
-	regions:update()
-end
-
 -- DRAWING FUNCTIONS
+local NODE_INNER_RADIUS = 17
+local NODE_OUTER_RADIUS = 20
 
 function drawEdge(x1, y1, x2, y2, directed, weight, color)
 	love.graphics.setColor(color)
@@ -365,12 +437,12 @@ function drawEdge(x1, y1, x2, y2, directed, weight, color)
 		love.graphics.rectangle("fill", cx - arrowSize * .6, cy - arrowSize * .6, arrowSize * 1.2, arrowSize * 1.2)
 	end
 
-	love.graphics.setColor(1, 1, 1)
-	love.graphics.printf(tostring(weight), cx - 20, cy - 10, 40, "center")
+	if weight ~= nil then
+		love.graphics.setColor(1, 1, 1)
+		love.graphics.printf(tostring(weight), cx - 20, cy - 10, 40, "center")
+	end
 end
 
-local NODE_INNER_RADIUS = 17
-local NODE_OUTER_RADIUS = 20
 function drawGraph(graph, selectedNode)
 	local nodes = graph:getNodes()
 	local edges = graph:getEdges()
@@ -420,6 +492,35 @@ function drawDijkstras(graph, dijkstras)
 	end
 end
 
+function drawTree(graph, tree)
+	love.graphics.setFont(GRAPH_FONT)
+
+	for _, edge in ipairs(tree) do
+		local x1, y1 = graph:getNodePos(edge.from)
+		local x2, y2 = graph:getNodePos(edge.to)
+
+		drawEdge(x1, y1, x2, y2, 0, nil, {1, 0, 0})
+	end
+end
+
+
+-- Love 
+function love.update()
+	regions:update()
+end
+
 function love.draw()
 	regions:draw()
+end
+
+function love.mousepressed(x, y, button, isTouch, presses)
+	regions:mousedown(x, y)
+end
+
+function love.mousereleased(x, y, button, isTouch, presses)
+	regions:mouseup(x, y)
+end
+
+function love.mousemoved(x, y, dx, dy)
+	regions:mousemove(x, y, dx, dy)
 end
