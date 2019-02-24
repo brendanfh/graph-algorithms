@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "graph_utils.h"
 
 int get_nodes(lua_State *L)
@@ -66,6 +67,64 @@ int get_edges(lua_State *L)
 	}
 
 	return 1;
+}
+
+int get_edge_by(lua_State *L)
+{
+	header head = (header) lua_touserdata(L, 1);
+	int from = lua_tointeger(L, 2);
+	int to = lua_tointeger(L, 3);
+
+	int weight;
+	if (lua_isnumber(L, 4))
+		weight = lua_tointeger(L, 4);
+	else
+		weight = ANY_WEIGHT;
+
+	edge e = find_edge(head, from, to, weight);
+	if (e == NULL)
+		lua_pushnumber(L, -1);
+	else
+		lua_pushnumber(L, e->edge_id);
+
+	return 1;
+}
+
+int get_edge_id(lua_State *L)
+{
+	header head = (header) lua_touserdata(L, 1);
+	int edge_id = lua_tointeger(L, 2);
+	lua_pop(L, 2);
+
+	edge e = get_edge(head, edge_id);
+	if (e == NULL) {
+		lua_pushnil(L);
+	} else {
+		lua_newtable(L);
+
+		lua_pushnumber(L, e->weight);
+		lua_setfield(L, 1, "weight");
+
+		lua_pushnumber(L, e->edge_id);
+		lua_setfield(L, 1, "id");
+	}
+
+	return 1;
+}
+
+int set_edge_weight(lua_State *L)
+{
+	header head = (header) lua_touserdata(L, 1);
+	int edge_id = lua_tointeger(L, 2);
+	int new_weight = lua_tointeger(L, 3);
+	lua_pop(L, 3);
+
+	edge e = get_edge(head, edge_id);
+	if (e == NULL) return 0;
+
+	e->weight = new_weight;
+
+	return 0;
 }
 
 // number, number get_node_pos(graph pointer, int node_id)
@@ -164,4 +223,27 @@ edge find_edge(header head, int from_node, int to_node, int weight)
 	}
 
 	return jogger;
+}
+
+edge get_edge(header head, int edge_id)
+{
+	connect jogger = head->front;
+	while (jogger != NULL)
+	{
+		edge curr_edge = jogger->neighbor_list;
+
+		while (curr_edge != NULL)
+		{
+			if (curr_edge->edge_id == edge_id)
+			{
+				return curr_edge;
+			}
+
+			curr_edge = curr_edge->next_edge;
+		}
+
+		jogger = jogger->next_node;
+	}
+
+	return NULL;
 }

@@ -56,7 +56,7 @@ function Graph:addEdge(fromNode, toNode, weight)
 	return edgeID1, edgeID2
 end
 
-function Graph:deleteEdge(edgeID)
+function Graph:deleteArc(edgeID)
 	assert(type(edgeID) == "number")
 
 	local g = self.graph
@@ -75,6 +75,21 @@ function Graph:getEdges()
 	return edges
 end
 
+function Graph:getEdgeID(from, to, weight)
+	local g = self.graph
+	local id = graphs.get_edge_by(g, from, to, weight)
+	return id
+end
+
+function Graph:getEdge(edgeID)
+	return graphs.get_edge(self.graph, edgeID)
+end
+
+function Graph:setEdgeWeight(edgeID, weight)
+	local g = self.graph
+	graphs.set_edge_weight(g, edgeID, weight)
+end
+
 function Graph:getNodePos(nodeID)
 	return graphs.get_node_pos(self.graph, nodeID)
 end
@@ -82,6 +97,14 @@ end
 function Graph:setNodePos(nodeID, x, y)
 	local g = self.graph
 	graphs.set_node_pos(self.graph, nodeID, x, y)
+end
+
+function Graph:clear()
+	local nodes = self:getNodes()
+
+	for _, node in pairs(nodes) do
+		self:deleteNode(node.id)
+	end
 end
 
 function Graph:dijkstras(startID, iterations)

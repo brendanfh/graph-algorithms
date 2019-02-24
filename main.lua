@@ -14,18 +14,19 @@ function love.load()
 
 	graph = Graph:new()
 
-	graph:addNode(100, 100)
-	graph:addNode(300, 100)
-	graph:addNode(200, 200)
-	graph:addNode(500, 400)
-	graph:addNode(300, 300)
+	-- graph:addNode(100, 100)
+	-- graph:addNode(300, 100)
+	-- graph:addNode(200, 200)
+	-- graph:addNode(500, 400)
+	-- graph:addNode(300, 300)
 
-	graph:addArc(0, 1)
-	graph:addEdge(0, 2)
-	graph:addArc(1, 3, 99)
-	graph:addEdge(1, 2)
+	-- graph:addArc(0, 1)
+	-- graph:addEdge(0, 2)
+	-- graph:addArc(1, 3, 99)
+	-- graph:addEdge(1, 2)
 
 	regions = Regions:new()
+
 	graph_region = {
 		-- needed for Regions calculations
 		priority = 1;
@@ -84,24 +85,38 @@ function love.load()
 			self.isMouseDown = false
 		end;
 	}
-
 	regions:add(graph_region)
 
+	-- Sidebar
 	regions:add {
 		priority = 1;
 		rect = { 0, 0, 200, 600 };
 
 		buttons = {
 			{
-				text = "Add node",
+				text = "Clear",
 				click = function()
-					graph:addNode(300, 300)
+					graph:clear()
+				end;
+			};
+			{
+				text = "Add node",
+				placeX = 20,
+				placeY = 20,
+				click = function(self)
+					graph:addNode(self.placeX, self.placeY)
+					self.placeX = self.placeX + 40
+					if self.placeX >= 600 then
+						self.placeX = 20
+						self.placeY = self.placeY + 40
+					end
 				end;
 			};
 			{
 				text = "Delete node",
 				click = function()
 					graph:deleteNode(graph_region.selectedNode)
+					graph_region.selectedNode = nil
 				end;
 			};
 			{
@@ -129,6 +144,21 @@ function love.load()
 				end;
 			};
 			{
+				text = "Delete arc";
+				click = function()
+					local curr = graph_region.selectedNode
+					if curr == nil then return end
+
+					graph_region.clickNodeFunction = function(node)
+						local id = graph:getEdgeID(curr, node.id, nil)
+						if id >= 0 then
+							graph:deleteArc(id)
+						end
+						graph_region.clickNodeFunction = nil
+					end
+				end;
+			};
+			{
 				text = "Run Dijkstras",
 				click = function()
 					if graph_region.selectedNode ~= nil then
@@ -144,7 +174,7 @@ function love.load()
 		draw = function(self)
 			love.graphics.setFont(SIDEBAR_FONT)
 			for i, button in ipairs(self.buttons) do
-				if self.mousePos >= (i - 1) * 60 + 10 and self.mousePos <= i * 60 + 10 then
+				if self.mousePos >= (i - 1) * 60 + 10 and self.mousePos < i * 60 - 10 then
 					love.graphics.setColor(.4, .4, .4)
 				else
 					love.graphics.setColor(.2, .2, .2)
@@ -159,7 +189,7 @@ function love.load()
 		mousedown = function(self, x, y)
 			for i, button in ipairs(self.buttons) do
 				if y >= (i - 1) * 60 + 10 and y <= i * 60 + 10 then
-					button.click()
+					button.click(button)
 				end
 			end
 		end;
@@ -185,6 +215,8 @@ function love.load()
 	-- 	mouseenter = function(self) end;
 	-- 	mouseleave = function(self) end;
 	-- }
+
+	createWeightChanger(0)
 end
 
 local dijkstrasOpen = false
@@ -211,12 +243,15 @@ function createDijskstraStepper(start)
 
 		update = function(self) end;
 		draw = function(self)
+			love.graphics.setFont(SIDEBAR_FONT)
 			love.graphics.setColor(0, 0, 0, 0.7)
 			love.graphics.rectangle("fill", 0, 0, 600, 50)
 
 			love.graphics.setColor(1, 1, 1)
 			love.graphics.polygon("fill", 265, 25, 295, 10, 295, 40)
 			love.graphics.polygon("fill", 335, 25, 305, 10, 305, 40)
+
+			love.graphics.printf("X", 540, 5, 50, "center", 0, 1.4, 1.4)
 		end;
 		mousedown = function(self, x, y)
 			if x >= 265 and x <= 295 then
@@ -243,6 +278,50 @@ function createDijskstraStepper(start)
 	}
 
 	reg_id = regions:add(region)
+end
+
+function createWeightChanger(edgeID)
+	regions:add {
+		priority = 100;
+		rect = { 200, 0, 200, 100 };
+
+		update = function(self) end;
+		draw = function(self)
+			love.graphics.setColor(0, 0, 0, 0.8)
+			love.graphics.rectangle("fill", 0, 0, 200, 100)
+
+			love.graphics.setColor(1, 1, 1)
+			love.graphics.setFont(SIDEBAR_FONT)
+			love.graphics.printf("Weight", 0, 0, 200, "center")
+
+			love.graphics.setFont(GRAPH_FONT)
+			love.graphics.printf("X", 0, 0, 190, "right")
+
+			love.graphics.setFont(SIDEBAR_FONT)
+			local edge = graph:getEdge(edgeID)
+			if edge then
+				love.graphics.printf(tostring(edge.weight), 0, 45, 200, "center")
+
+				love.graphics.setColor(0, 1, 0)
+				love.graphics.circle("fill", 160, 60, 20)
+
+				love.graphics.setColor(1, 0, 0)
+				love.graphics.circle("fill", 40, 60, 20)
+
+				love.graphics.setColor(1, 1, 1)
+				love.graphics.rectangle("fill", 156, 45, 8, 30)
+				love.graphics.rectangle("fill", 145, 56, 30, 8)
+				love.graphics.rectangle("fill", 25, 56, 30, 8)
+			end
+		end;
+		mousedown = function(self, x, y)
+
+		end;
+		mouseup = function(self, x, y) end;
+		mousemove = function(self, x, y, dx, dy) end;
+		mouseenter = function(self) end;
+		mouseleave = function(self) end;
+	}
 end
 
 function love.mousepressed(x, y, button, isTouch, presses)

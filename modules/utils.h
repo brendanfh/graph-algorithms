@@ -22,6 +22,9 @@ sq_node_p sq_pop(sq_node_p stack_top);
 sq_node_p sq_enque(sq_node_p front_of_queue, int val);
 sq_node_p sq_deque(sq_node_p front_of_queue);
 
+int sq_contains(sq_node_p sq, int val);
+void sq_delete(sq_node_p sq);
+
 void sq_print(sq_node_p sq);
 
 dj_node_p insert_dj(dj_node_p front_of_list, int id, int distance);
@@ -34,8 +37,8 @@ int get_distance(dj_node_p front_of_list, int id);
 #define top(sq)		   (sq_top((sq)))
 #define front(sq)	   (sq_front((sq)))
 #define push(sq, val)  ((sq) = sq_push( (sq), (val)))
-#define pop(sq, val)   ((sq) = sq_pop(  (sq), (val)))
+#define pop(sq)        ((sq) = sq_pop(  (sq)))
 #define enque(sq, val) ((sq) = sq_enque((sq), (val)))
-#define deque(sq, val) ((sq) = sq_deque((sq), (val)))
+#define deque(sq)      ((sq) = sq_deque((sq)))
 
 #endif

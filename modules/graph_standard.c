@@ -216,31 +216,35 @@ int del_edge(lua_State *L)
 
 	//we will have to walk through each node and walk through each edge of each node
 	connect runner = head->front;
-	while(runner != NULL)
+	while (runner != NULL)
 	{
 		//now we will have to go through every edge within the node
 		edge curr_edge = runner->neighbor_list;
 
-		if(curr_edge == NULL) //no neighbors
-			runner = runner->next_node;
-
-		else if(curr_edge->edge_id == edge_id) //first edge is one to remove
+		if (curr_edge == NULL) {
+			//no neighbors
+		}
+		else if (curr_edge->edge_id == edge_id) //first edge is one to remove
 		{
 			runner->neighbor_list = curr_edge->next_edge;
 			free(curr_edge);
 			return 0;
 		}
-		
 		else //search through each edge
 		{
-			while(curr_edge->next_edge != NULL)
+			edge follower = curr_edge;
+			curr_edge = curr_edge->next_edge;
+			while (curr_edge != NULL)
 			{
-				if(curr_edge->next_edge->edge_id == edge_id)
+				if (curr_edge->edge_id == edge_id)
 				{
-					curr_edge->next_edge = curr_edge->next_edge->next_edge;
+					follower->next_edge = curr_edge->next_edge;
 					free(curr_edge);
 					return 0;
 				}
+
+				follower = curr_edge;
+				curr_edge = curr_edge->next_edge;
 			}
 		}
 

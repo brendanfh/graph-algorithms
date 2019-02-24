@@ -18,6 +18,9 @@ int luaopen_graphs(lua_State *L)
 
 		{ "get_nodes", get_nodes },
 		{ "get_edges", get_edges },
+		{ "get_edge_by", get_edge_by },
+		{ "get_edge", get_edge_id },
+		{ "set_edge_weight", set_edge_weight },
 		{ "get_node_pos", get_node_pos },
 		{ "set_node_pos", set_node_pos },
 

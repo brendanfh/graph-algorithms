@@ -29,6 +29,9 @@ LUA_FUNCTION(get_nodes);
 	}
 */
 LUA_FUNCTION(get_edges);
+LUA_FUNCTION(get_edge_by);
+LUA_FUNCTION(get_edge_id);
+LUA_FUNCTION(set_edge_weight);
 
 LUA_FUNCTION(get_node_pos);
 LUA_FUNCTION(set_node_pos);
@@ -37,5 +40,6 @@ LUA_FUNCTION(print_graph);
 
 connect find_node(header head, int node_id);
 edge    find_edge(header head, int from_node, int to_node, int weight);
+edge 	get_edge(header head, int edge_id);
 
 #endif

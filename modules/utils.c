@@ -1,7 +1,7 @@
+#include "utils.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "utils.h"
 
 int sq_top(sq_node_p stack_top)
 {
@@ -91,6 +91,20 @@ sq_node_p sq_deque(sq_node_p front_of_queue)
 	return front_of_queue;
 }
 
+
+int sq_contains(sq_node_p sq, int val)
+{
+	while(sq != NULL)
+	{
+		if(sq->value == val)
+			return 1;
+
+		sq = sq->next;
+	}
+
+	return 0;
+}
+
 void sq_print(sq_node_p sq)
 {
 	sq_node_p runner = sq;
@@ -102,6 +116,19 @@ void sq_print(sq_node_p sq)
 	}
 
 	puts("");
+}
+
+void sq_delete(sq_node_p sq)
+{
+	sq_node_p runner = sq;
+
+	while(sq != NULL)
+	{
+		sq_node_p tmp = sq;
+		sq = sq->next;
+
+		free(tmp);
+	}
 }
 
 dj_node_p insert_dj(dj_node_p front_of_list, int id, int distance)

@@ -3,8 +3,9 @@
 #include <limits.h>
 
 #include "graph_algorithms.h"
+#include "graph_utils.h"
 
-static dj_node_p depth_first_search(header head, int start_node)
+static dj_node_p dj_search(header head, int start_node)
 {
 	dj_node_p visited_nodes = insert_dj(NULL,start_node,0);
 	sq_node_p stack = sq_push(NULL, start_node);
@@ -28,15 +29,172 @@ static dj_node_p depth_first_search(header head, int start_node)
 		}
 		if (edge_walker == NULL)
 		{
-			stack = sq_pop(stack);
+			pop(stack);
 		}
 		else
 		{
 			visited_nodes = insert_dj(visited_nodes, edge_walker->to_id, 0);
-			stack = sq_push(stack, edge_walker->to_id);
+			push(stack, edge_walker->to_id);
 		}
 	}
 	return visited_nodes;
+}
+
+int breadth_first_search(lua_State *L)
+{
+	header head = (header)lua_touserdata(L, 1);
+	int start_id = lua_tointeger(L, 2);
+	int iterations = lua_tointeger(L, 3);
+
+	int previous_node = start_id;
+
+	int current_iterations = 0;
+
+	sq_node_p visited_nodes = NULL;
+	sq_node_p from_visited_nodes = NULL;
+	enque(visited_nodes, start_id);
+	enque(from_visited_nodes, start_id);
+
+
+	sq_node_p queue = NULL;
+	enque(queue, start_id);
+
+	while(queue != NULL && current_iterations <= iterations)
+	{
+		int node_id = front(queue);
+		deque(queue);
+
+		if(sq_contains(visited_nodes, node_id))
+			continue;
+
+		connect runner = find_node(head, node_id);
+
+		edge edge_runner = runner->neighbor_list; //grab the neighbor list of our current node
+
+		while(edge_runner != NULL)
+		{
+			enque(queue, edge_runner->to_id);
+			edge_runner = edge_runner->next_edge;
+		}
+
+		enque(from_visited_nodes, previous_node);
+		previous_node = node_id;
+		enque(visited_nodes, node_id);
+
+		current_iterations++;
+	}
+
+	deque(visited_nodes);
+	deque(from_visited_nodes);
+
+
+	//BUILD OUT RETURN TO LUA
+	lua_newtable(L);
+	sq_node_p vwalker;
+	sq_node_p fvwalker;
+	int index = 1;
+	while (vwalker != NULL)
+	{
+		lua_pushnumber(L, index);
+
+		lua_newtable(L);
+
+		lua_pushnumber(L, front(fvwalker));
+		lua_setfield(L, 3, "from");
+		deque(fvwalker);
+
+		lua_pushnumber(L, front(vwalker));
+		lua_setfield(L, 3, "to");
+		deque(vwalker);
+
+		lua_settable(L, 1);
+
+		index++;
+	}
+
+
+	sq_delete(visited_nodes);
+	sq_delete(from_visited_nodes);
+	sq_delete(queue);
+	return 1;
+}
+
+int depth_first_search(lua_State *L)
+{
+	header head = (header)lua_touserdata(L, 1);
+	int start_id = lua_tointeger(L, 2);
+	int iterations = lua_tointeger(L, 3);
+
+	int previous_node = start_id;
+
+	int current_iterations = 0;
+
+	sq_node_p visited_nodes = NULL;
+	sq_node_p from_visited_nodes = NULL;
+	enque(visited_nodes, start_id);
+	enque(from_visited_nodes, start_id);
+
+	sq_node_p stack = NULL;
+	push(stack, start_id);
+
+	while(stack != NULL && current_iterations <= iterations)
+	{
+		int node_id = top(stack);
+		pop(stack);
+
+		if(sq_contains(visited_nodes, node_id))
+			continue;
+
+		connect runner = find_node(head, node_id);
+
+		edge edge_runner = runner->neighbor_list; //grab the neighbor list of our current node
+
+		while(edge_runner != NULL)
+		{
+			push(stack, edge_runner->to_id);
+			edge_runner = edge_runner->next_edge;
+		}
+
+		enque(from_visited_nodes, previous_node);
+		previous_node = node_id;
+		enque(visited_nodes, node_id);
+
+		current_iterations++;
+	}
+
+	deque(from_visited_nodes);
+	deque(visited_nodes);
+
+
+	//BUILD OUT RETURN TO LUA
+	lua_newtable(L);
+	sq_node_p vwalker;
+	sq_node_p fvwalker;
+	int index = 1;
+	while (vwalker != NULL)
+	{
+		lua_pushnumber(L, index);
+
+		lua_newtable(L);
+
+		lua_pushnumber(L, front(fvwalker));
+		lua_setfield(L, 3, "from");
+		deque(fvwalker);
+
+		lua_pushnumber(L, front(vwalker));
+		lua_setfield(L, 3, "to");
+		deque(vwalker);
+
+		lua_settable(L, 1);
+
+		index++;
+	}
+
+
+	sq_delete(visited_nodes);
+	sq_delete(from_visited_nodes);
+	sq_delete(stack);
+	return 1;
 }
 
 int dijkstras(lua_State *L)
@@ -52,7 +210,7 @@ int dijkstras(lua_State *L)
 
 	dj_node_p has_visited = insert_dj(NULL, start_id, 0);
 	dj_node_p shortest_distance = insert_dj(NULL, start_id, 0);
-	dj_node_p connected_nodes = depth_first_search(head, start_id);
+	dj_node_p connected_nodes = dj_search(head, start_id);
 
 	connected_nodes = remove_dj(connected_nodes, start_id);
 	dj_node_p distance_walker = connected_nodes;
@@ -73,11 +231,7 @@ int dijkstras(lua_State *L)
 		int to = -1;
 		while (visited_tmp != NULL)
 		{
-			connect current_node = head->front;
-			while (current_node->node_id != visited_tmp->node_id)
-			{
-				current_node = current_node->next_node;
-			}
+			connect current_node = find_node(head, visited_tmp->node_id);
 
 			edge edge_walker = current_node->neighbor_list;
 			while (edge_walker != NULL)
@@ -100,7 +254,7 @@ int dijkstras(lua_State *L)
 		last_to = to;
 		last_from = from;
 
-		if (is_in_list(connected_nodes,to) == 1)
+		if (is_in_list(connected_nodes, to) == 1)
 		{
 			connected_nodes = remove_dj(connected_nodes, to);
 		}
