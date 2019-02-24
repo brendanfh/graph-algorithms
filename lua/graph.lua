@@ -25,6 +25,8 @@ function Graph:addNode(x, y)
 end
 
 function Graph:deleteNode(nodeID)
+	if nodeID == nil then return end
+
 	assert(type(nodeID) == "number")
 	local g = self.graph
 

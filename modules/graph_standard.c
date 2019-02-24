@@ -67,7 +67,6 @@ int del_node(lua_State *L)
 	header head = (header)lua_touserdata(L,1);
 	int nid = lua_tointeger(L,2);
 
-
 	//find the node
 	connect walker = head->front;
 	connect follower = walker;
@@ -108,14 +107,17 @@ int del_node(lua_State *L)
 				if (edge_walker == node_walker->neighbor_list)
 				{
 					node_walker->neighbor_list = node_walker->neighbor_list->next_edge;
+					free(edge_walker);
+					edge_walker = node_walker->neighbor_list;
+					delete_walker = edge_walker;
 				}
 				else
 				{
-					delete_walker->next_edge = edge_walker;
+					delete_walker->next_edge = edge_walker->next_edge;
 					delete_walker = delete_walker->next_edge;
+					edge_walker = edge_walker->next_edge;
+					free(delete_walker);				
 				}
-				edge_walker = edge_walker->next_edge;
-				free(delete_walker);
 			}
 			else
 			{
@@ -125,7 +127,6 @@ int del_node(lua_State *L)
 		}
 		node_walker = node_walker->next_node;
 	}
-
 
 	//delete the node
 	if (walker == head->front)

@@ -61,8 +61,9 @@ int dijkstras(lua_State *L)
 		insert_dj(shortest_distance, distance_walker->node_id, -1);
 		distance_walker = distance_walker->next;
 	}
-	int last_from;
-	int last_to;
+	int last_from = -1;
+	int last_to = -1;
+	int last_weight;
 
 	while (connected_nodes != NULL && current_iterations <= iterations)
 	{
@@ -89,6 +90,7 @@ int dijkstras(lua_State *L)
 						shortest_distance_tmp = distance_to_current_node + edge_walker->weight;
 						from = current_node->node_id;
 						to = edge_walker->to_id;
+						last_weight = edge_walker->weight;
 					}
 				}
 				edge_walker = edge_walker->next_edge;
@@ -142,8 +144,19 @@ int dijkstras(lua_State *L)
 		index++;
 	}
 
+	lua_pushnumber(L, last_from);
+	lua_setfield(L, 1, "from");
+
+	lua_pushnumber(L, last_to);
+	lua_setfield(L, 1, "to");
+
+	lua_pushnumber(L, last_weight);
+	lua_setfield(L, 1, "weight");
+
+	lua_pushboolean(L, connected_nodes == NULL);
+
 	//put shorest_distance linked list into table and return table
 	delete_dj(shortest_distance);
-	return 1;
+	return 2;
 }
 
